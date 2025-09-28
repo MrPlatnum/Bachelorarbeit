@@ -1,0 +1,240 @@
+<div class="min-h-screen bg-gray-50 py-8 px-4">
+  <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
+    <div class="text-center mb-8">
+      <h2 class="text-3xl font-bold text-gray-900">Abschließender Fragebogen</h2>
+      <p class="text-gray-600 mt-2">Ihre Angaben helfen uns bei der wissenschaftlichen Auswertung der Studie.</p>
+    </div>
+
+    <form [formGroup]="demographicsForm" (ngSubmit)="onSubmit()">
+      
+      <div class="mb-8">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+          <span class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3">1</span>
+          Bewertung der Halteposition
+        </h3>
+        <p class="text-sm text-gray-600 mb-6">Diese Fragen beziehen sich auf den Test, bei dem Sie das virtuelle Objekt 20 Sekunden lang in Position halten mussten.</p>
+        
+        <div class="space-y-6">
+          <div class="p-4 border border-gray-200 rounded-lg">
+            <label id="label-comfortHold" class="block text-sm font-medium text-gray-800 mb-3">
+              Ich empfand es als angenehm, das Gerät für die Dauer des Tests in der Position zu halten. *
+            </label>
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-gray-500 w-1/5 text-center">Stimme überhaupt<br>nicht zu</span>
+              <div class="flex-grow flex justify-around">
+                <label *ngFor="let option of [1, 2, 3, 4, 5]" class="flex flex-col items-center cursor-pointer">
+                  <input id="comfortHold-{{option}}" type="radio" formControlName="comfortHold" [value]="option" (change)="logInteraction($event)" class="mb-1 focus:ring-blue-500 text-blue-600">
+                  <span class="text-sm">{{ option }}</span>
+                </label>
+              </div>
+              <span class="text-xs text-gray-500 w-1/5 text-center">Stimme<br>voll zu</span>
+            </div>
+          </div>
+
+          <div class="p-4 border border-gray-200 rounded-lg">
+            <label id="label-enduranceFiveMinutes" class="block text-sm font-medium text-gray-800 mb-3">
+              Ich glaube, ich könnte diese Position auch noch länger bequem halten. *
+            </label>
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-gray-500 w-1/5 text-center">Stimme überhaupt<br>nicht zu</span>
+              <div class="flex-grow flex justify-around">
+                <label *ngFor="let option of [1, 2, 3, 4, 5]" class="flex flex-col items-center cursor-pointer">
+                  <input id="enduranceFiveMinutes-{{option}}" type="radio" formControlName="enduranceFiveMinutes" [value]="option" (change)="logInteraction($event)" class="mb-1 focus:ring-blue-500 text-blue-600">
+                  <span class="text-sm">{{ option }}</span>
+                </label>
+              </div>
+              <span class="text-xs text-gray-500 w-1/5 text-center">Stimme<br>voll zu</span>
+            </div>
+          </div>
+          
+          <div class="p-4 border border-gray-200 rounded-lg">
+            <label id="label-physicalStrain" class="block text-sm font-medium text-gray-800 mb-3">
+              Das Halten des Geräts war körperlich anstrengend. *
+            </label>
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-gray-500 w-1/5 text-center">Stimme überhaupt<br>nicht zu</span>
+              <div class="flex-grow flex justify-around">
+                <label *ngFor="let option of [1, 2, 3, 4, 5]" class="flex flex-col items-center cursor-pointer">
+                  <input id="physicalStrain-{{option}}" type="radio" formControlName="physicalStrain" [value]="option" (change)="logInteraction($event)" class="mb-1 focus:ring-blue-500 text-blue-600">
+                  <span class="text-sm">{{ option }}</span>
+                </label>
+              </div>
+              <span class="text-xs text-gray-500 w-1/5 text-center">Stimme<br>voll zu</span>
+            </div>
+          </div>
+
+          <div class="p-4 border border-gray-200 rounded-lg">
+            <label id="label-physicalStrain5min" class="block text-sm font-medium text-gray-800 mb-3">
+              Das Halten des Geräts für eine noch längere Dauer wäre körperlich anstrengend. *
+            </label>
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-gray-500 w-1/5 text-center">Stimme überhaupt<br>nicht zu</span>
+              <div class="flex-grow flex justify-around">
+                <label *ngFor="let option of [1, 2, 3, 4, 5]" class="flex flex-col items-center cursor-pointer">
+                  <input id="physicalStrain5min-{{option}}" type="radio" formControlName="physicalStrain5min" [value]="option" (change)="logInteraction($event)" class="mb-1 focus:ring-blue-500 text-blue-600">
+                  <span class="text-sm">{{ option }}</span>
+                </label>
+              </div>
+              <span class="text-xs text-gray-500 w-1/5 text-center">Stimme<br>voll zu</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 border border-gray-200 rounded-lg">
+        <label id="label-user-position" class="block text-sm font-medium text-gray-800 mb-3">
+          In welcher Position haben Sie den Test durchgeführt? *
+        </label>
+        <div class="flex items-center justify-center space-x-8 pt-2">
+          <label class="flex items-center cursor-pointer">
+            <input id="user-position-sitting" type="radio" formControlName="userPosition" value="sitting" (change)="logInteraction($event)" class="focus:ring-blue-500 text-blue-600 mr-2">
+            <span>Sitzend</span>
+          </label>
+          <label class="flex items-center cursor-pointer">
+            <input id="user-position-standing" type="radio" formControlName="userPosition" value="standing" (change)="logInteraction($event)" class="focus:ring-blue-500 text-blue-600 mr-2">
+            <span>Stehend</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+          <span class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3">2</span>
+          Demografische Angaben
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="age-input" class="block text-sm font-medium text-gray-700 mb-2">Alter *</label>
+            <input id="age-input" type="number" formControlName="age" min="13" max="120" (change)="logInteraction($event)" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ihr Alter">
+            <div *ngIf="demographicsForm.get('age')?.errors?.['required'] && demographicsForm.get('age')?.touched" class="text-red-500 text-sm mt-1">Die Angabe des Alters ist erforderlich.</div>
+          </div>
+          <div>
+            <label for="gender-select" class="block text-sm font-medium text-gray-700 mb-2">Geschlecht *</label>
+            <select id="gender-select" formControlName="gender" (change)="logInteraction($event)" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option [ngValue]="null" disabled>Bitte auswählen</option>
+              <option value="male">Männlich</option>
+              <option value="female">Weiblich</option>
+              <option value="non-binary">Divers</option>
+              <option value="prefer-not-to-say">Keine Angabe</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+          <span class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3">3</span>
+          Vorerfahrung mit AR/VR
+        </h3>
+        <div class="space-y-6">
+          <div class="p-4 border border-gray-200 rounded-lg">
+            <label id="label-ar-experience" class="block text-sm font-medium text-gray-800 mb-3">Erfahrung mit Augmented Reality (AR) *</label>
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-gray-500 w-1/5 text-center">Keine<br>Erfahrung</span>
+              <div class="flex-grow flex justify-around">
+                <label *ngFor="let option of [1, 2, 3, 4, 5]" class="flex flex-col items-center cursor-pointer">
+                  <input id="arExperience-{{option}}" type="radio" formControlName="arExperience" [value]="option" (change)="logInteraction($event)" class="mb-1 focus:ring-blue-500 text-blue-600">
+                  <span class="text-sm">{{ option }}</span>
+                </label>
+              </div>
+              <span class="text-xs text-gray-500 w-1/5 text-center">Experte</span>
+            </div>
+          </div>
+          <div class="p-4 border border-gray-200 rounded-lg">
+            <label id="label-vr-experience" class="block text-sm font-medium text-gray-800 mb-3">Erfahrung mit Virtual Reality (VR) *</label>
+            <div class="flex justify-between items-center">
+              <span class="text-xs text-gray-500 w-1/5 text-center">Keine<br>Erfahrung</span>
+              <div class="flex-grow flex justify-around">
+                <label *ngFor="let option of [1, 2, 3, 4, 5]" class="flex flex-col items-center cursor-pointer">
+                  <input id="vrExperience-{{option}}" type="radio" formControlName="vrExperience" [value]="option" (change)="logInteraction($event)" class="mb-1 focus:ring-blue-500 text-blue-600">
+                  <span class="text-sm">{{ option }}</span>
+                </label>
+              </div>
+              <span class="text-xs text-gray-500 w-1/5 text-center">Experte</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+          <span class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3">4</span>
+          Visuelle & Physische Angaben
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="vision-correction-select" class="block text-sm font-medium text-gray-700 mb-2">Benötigen Sie eine Sehhilfe?</label>
+            <select id="vision-correction-select" formControlName="visionCorrection" (change)="logInteraction($event)" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option [ngValue]="null" disabled>Bitte auswählen</option>
+              <option value="none">Nein, keine</option>
+              <option value="glasses">Brille</option>
+              <option value="contacts">Kontaktlinsen</option>
+              <option value="both">Brille und Kontaktlinsen</option>
+            </select>
+          </div>
+          <div>
+            <label for="dominant-hand-select" class="block text-sm font-medium text-gray-700 mb-2">Händigkeit</label>
+            <select id="dominant-hand-select" formControlName="dominantHand" (change)="logInteraction($event)" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option [ngValue]="null" disabled>Bitte auswählen</option>
+              <option value="right">Rechtshänder</option>
+              <option value="left">Linkshänder</option>
+              <option value="ambidextrous">Beidhänder</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+          <span class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3">5</span>
+          Bewertung der Benutzerfreundlichkeit
+        </h3>
+        <p class="text-sm text-gray-600 mb-6">Bitte bewerten Sie die folgende Anwendung anhand der nachstehenden Aussagen auf einer Skala von 1 (stimme überhaupt nicht zu) bis 5 (stimme voll zu).</p>
+        
+        <div class="space-y-4">
+          <div *ngFor="let susItem of susItems; let i = index" class="p-4 border border-gray-200 rounded-lg">
+            <label [id]="'label-sus' + (i+1)" class="block text-sm font-medium text-gray-800 mb-3">{{ i + 1 }}. {{ susItem.label }} *</label>
+            <div class="flex justify-between items-center text-center">
+              <span class="text-xs text-gray-500 w-1/5">Stimme überhaupt<br>nicht zu</span>
+              <div class="flex-grow flex justify-around">
+                <label *ngFor="let option of [1, 2, 3, 4, 5]" class="flex flex-col items-center cursor-pointer">
+                  <input [id]="'sus' + (i+1) + '-' + option" type="radio" [formControlName]="susItem.controlName" [value]="option" (change)="logInteraction($event)" class="mb-1 focus:ring-blue-500 text-blue-600">
+                  <span class="text-sm">{{ option }}</span>
+                </label>
+              </div>
+              <span class="text-xs text-gray-500 w-1/5">Stimme<br>voll zu</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-8">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+          <span class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3">6</span>
+          Abschließendes Feedback
+        </h3>
+        <div class="space-y-6">
+          <div>
+            <label for="comments-textarea" class="block text-sm font-medium text-gray-700 mb-2">Anmerkungen und Verbesserungsvorschläge</label>
+            <textarea id="comments-textarea" formControlName="comments" rows="4" (change)="logInteraction($event)" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ihre Gedanken, Vorschläge oder aufgetretene Probleme..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center">
+        <button id="submit-button" type="submit" (click)="logInteraction($event)" [disabled]="!demographicsForm.valid || isSubmitting" class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-lg text-lg transition-colors duration-200">
+          <span *ngIf="!isSubmitting">Fragebogen absenden</span>
+          <span *ngIf="isSubmitting">Wird übermittelt...</span>
+        </button>
+      </div>
+      <div *ngIf="!demographicsForm.valid && demographicsForm.touched" class="text-center mt-2">
+        <p class="text-red-500 text-sm">Bitte füllen Sie alle mit * markierten Pflichtfelder aus.</p>
+      </div>
+    </form>
+
+    <div *ngIf="isSubmitted" class="mt-8 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md text-center">
+      <h4 class="font-semibold">Vielen Dank!</h4>
+      <p>Ihre Angaben wurden erfolgreich übermittelt. Die Studie ist hiermit abgeschlossen.</p>
+    </div>
+  </div>
+</div>

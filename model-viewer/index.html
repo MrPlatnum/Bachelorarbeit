@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- This file was created with the aha Ansi HTML Adapter. https://github.com/theZiz/aha -->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="application/xml+xhtml; charset=UTF-8"/>
+<title>stdin</title>
+</head>
+<body>
+<pre>
+<span style="font-weight:bold;">diff --git a/packages/model-viewer/src/three-components/ARRenderer.ts b/packages/model-viewer/src/three-components/ARRenderer.ts</span>
+<span style="font-weight:bold;">index 5b5778d..ebd066f 100644</span>
+<span style="font-weight:bold;">--- a/packages/model-viewer/src/three-components/ARRenderer.ts</span>
+<span style="font-weight:bold;">+++ b/packages/model-viewer/src/three-components/ARRenderer.ts</span>
+<span style="color:teal;">@@ -43,6 +43,7 @@</span> const HIT_ANGLE_DEG = 20;
+const SCALE_SNAP = 0.2;
+// upward-oriented ray for ceiling detection
+const CEILING_HIT_ANGLE_DEG = 20;
+<span style="color:green;">const CEILING_ORIENTATION_THRESHOLD = 15; // degrees</span>
+// For automatic dynamic viewport scaling, don't let the scale drop below this
+// limit.
+const MIN_VIEWPORT_SCALE = 0.25;
+<span style="color:teal;">@@ -752,20 +753,35 @@</span> export class ARRenderer extends EventDispatcher&lt;
+    const {pivot, element} = scene;
+    const {position} = pivot;
+    const xrCamera = scene.getCamera();
+  
+    const {width, height} = this.overlay!.getBoundingClientRect();
+    scene.setSize(width, height);
+  
+    xrCamera.projectionMatrixInverse.copy(xrCamera.projectionMatrix).invert();
+  
+    const {theta} = (element as ModelViewerElementBase &amp; ControlsInterface)
+                        .getCameraOrbit();
+  
+    // Orient model to match the 3D camera view
+    const cameraDirection = xrCamera.getWorldDirection(vector3);
+    scene.yaw = Math.atan2(-cameraDirection.x, -cameraDirection.z) - theta;
+    this.goalYaw = scene.yaw;
+  
+    <span style="color:green;">if (this.placeOnCeiling &amp;&amp; !this.isViewPointingUp()) {</span>
+<span style="color:green;">      scene.visible = false; // Hide until properly oriented</span>
+<span style="color:green;">      scene.setHotspotsVisibility(true); // Still show UI</span>
+<span style="color:green;">      </span>
+<span style="color:green;">      // Set up touch interaction for screen-space mode</span>
+<span style="color:green;">      if (this.xrMode === XRMode.SCREEN_SPACE) {</span>
+<span style="color:green;">        const {session} = this.frame!;</span>
+<span style="color:green;">        session.addEventListener('selectstart', this.onSelectStart);</span>
+<span style="color:green;">        session.addEventListener('selectend', this.onSelectEnd);</span>
+<span style="color:green;">        session.requestHitTestSourceForTransientInput!({profile: 'generic-touchscreen'})!</span>
+<span style="color:green;">          .then(hitTestSource =&gt; { this.transientHitTestSource = hitTestSource; });</span>
+<span style="color:green;">      }</span>
+<span style="color:green;">      return; // Exit early - don't place yet</span>
+<span style="color:green;">    }</span>
+  
+    // Use different placement logic for world-space vs screen-space
+    if (this.xrMode === XRMode.WORLD_SPACE &amp;&amp; !this.worldSpaceInitialPlacementDone) {
+      // Use automatic optimal placement for world-space AR only on first session
+<span style="color:teal;">@@ -795,28 +811,74 @@</span> export class ARRenderer extends EventDispatcher&lt;
+      const radius = Math.max(1, 2 * scene.boundingSphere.radius);
+      position.copy(xrCamera.position)
+          .add(cameraDirection.multiplyScalar(radius));
+  
+      this.updateTarget();
+      const target = scene.getTarget();
+      position.add(target).sub(this.oldTarget);
+  
+      this.goalPosition.copy(position);
+    }
+  
+    scene.setHotspotsVisibility(true);
+    <span style="color:green;">scene.visible = true; // Model is properly oriented, show it</span>
+  
+    if (this.xrMode === XRMode.SCREEN_SPACE) {
+      const {session} = this.frame!;
+      session.addEventListener('selectstart', this.onSelectStart);
+      session.addEventListener('selectend', this.onSelectEnd);
+      <span style="color:red;">session</span>
+<span style="color:red;">          .requestHitTestSourceForTransientInput!</span>
+<span style="color:red;">          ({profile: 'generic-touchscreen'})!.then(hitTestSource</span><span style="color:green;">session.requestHitTestSourceForTransientInput!({profile: 'generic-touchscreen'})!</span>
+<span style="color:green;">        .then(hitTestSource</span> =&gt; { this.transientHitTestSource = hitTestSource; });
+    }
+  }
+
+  <span style="color:green;">private checkForDeferredCeilingPlacement(): void {</span>
+<span style="color:green;">    // Check on every frame—both XR modes, only when ceiling is the target and the model is hidden</span>
+<span style="color:green;">    if (!this.placeOnCeiling || !this.presentedScene || this.presentedScene.visible) return;</span>
+<span style="color:green;">  </span>
+<span style="color:green;">    const isWorldSpaceDeferred = this.xrMode === XRMode.WORLD_SPACE &amp;&amp; !this.worldSpaceInitialPlacementDone;</span>
+<span style="color:green;">    const isScreenSpaceDeferred = this.xrMode === XRMode.SCREEN_SPACE;</span>
+<span style="color:green;">  </span>
+<span style="color:green;">    if (isWorldSpaceDeferred || isScreenSpaceDeferred) {</span>
+<span style="color:green;">      if (this.isViewPointingUp()) {</span>
+<span style="color:green;">        this.performDeferredPlacement();</span>
+<span style="color:green;">      }</span>
+<span style="color:green;">    }</span>
+<span style="color:green;">  }</span>
+<span style="color:green;">  </span>
+<span style="color:green;">  private performDeferredPlacement(): void {</span>
+<span style="color:green;">    const scene = this.presentedScene!;</span>
+<span style="color:green;">    if (this.xrMode === XRMode.WORLD_SPACE) {</span>
+<span style="color:green;">      const xrCamera = scene.getCamera();</span>
+<span style="color:green;">      const {position, scale} = this.calculateWorldSpaceOptimalPlacement(scene, xrCamera);</span>
+<span style="color:green;">      this.goalPosition.copy(position);</span>
+<span style="color:green;">      this.goalScale = scale;</span>
+<span style="color:green;">      this.initialModelScale = scale;</span>
+<span style="color:green;">      scene.pivot.position.copy(position);</span>
+<span style="color:green;">      scene.pivot.scale.set(scale, scale, scale);</span>
+<span style="color:green;">      this.worldSpaceInitialPlacementDone = true;</span>
+<span style="color:green;">      this.calculateWorldSpaceScaleLimits(scene);</span>
+<span style="color:green;">      this.enableWorldSpaceUserInteraction();</span>
+<span style="color:green;">    } else { // SCREEN_SPACE</span>
+<span style="color:green;">      const xrCamera = scene.getCamera();</span>
+<span style="color:green;">      const cameraDirection = xrCamera.getWorldDirection(new Vector3());</span>
+<span style="color:green;">      const radius = Math.max(1, 2 * scene.boundingSphere.radius);</span>
+<span style="color:green;">      scene.pivot.position.copy(xrCamera.position).add(cameraDirection.multiplyScalar(radius));</span>
+<span style="color:green;">      this.updateTarget();</span>
+<span style="color:green;">      const target = scene.getTarget();</span>
+<span style="color:green;">      scene.pivot.position.add(target).sub(this.oldTarget);</span>
+<span style="color:green;">      this.goalPosition.copy(scene.pivot.position);</span>
+<span style="color:green;">      // Setup touch interaction if needed</span>
+<span style="color:green;">      const {session} = this.frame!;</span>
+<span style="color:green;">      session.addEventListener('selectstart', this.onSelectStart);</span>
+<span style="color:green;">      session.addEventListener('selectend', this.onSelectEnd);</span>
+<span style="color:green;">      session.requestHitTestSourceForTransientInput!({profile: 'generic-touchscreen'})!</span>
+<span style="color:green;">        .then(hitTestSource =&gt; { this.transientHitTestSource = hitTestSource; });</span>
+<span style="color:green;">    }</span>
+<span style="color:green;">    scene.visible = true;</span>
+<span style="color:green;">    scene.setHotspotsVisibility(true);</span>
+<span style="color:green;">    this.dispatchEvent({type: 'status', status: ARStatus.OBJECT_PLACED});</span>
+<span style="color:green;">  }</span>
+  
+  private getTouchLocation(): Vector3|null {
+    const {axes} = this.inputSource!.gamepad!;
+    let location = this.placementBox!.getExpandedHit(
+<span style="color:teal;">@@ -869,42 +931,71 @@</span> export class ARRenderer extends EventDispatcher&lt;
+ *            until a ceiling hit arrives (no premature floor placement).
+ */
+  public moveToAnchor(frame: XRFrame) {
+    <span style="color:green;">// Handle deferred initial placement for ceiling mode</span>
+    if <span style="color:red;">(this.xrMode</span><span style="color:green;">(this.placeOnCeiling &amp;&amp; </span>
+<span style="color:green;">        this.xrMode</span> === XRMode.WORLD_SPACE &amp;&amp; 
+        <span style="color:red;">!this.worldSpaceInitialPlacementDone)</span><span style="color:green;">!this.worldSpaceInitialPlacementDone &amp;&amp;</span>
+<span style="color:green;">        !this.presentedScene!.visible) {</span>
+<span style="color:green;">      </span>
+<span style="color:green;">      // Check if orientation is now sufficient</span>
+<span style="color:green;">      if (!this.isViewPointingUp())</span> {
+        <span style="color:red;">this.placementBox!.show</span><span style="color:green;">console.log('[ARR/moveToAnchor] Still waiting for proper ceiling orientation');</span>
+<span style="color:green;">        return;</span>
+<span style="color:green;">      }</span>
+<span style="color:green;">      </span>
+<span style="color:green;">      // Orientation is good - complete the deferred world-space placement</span>
+<span style="color:green;">      const scene = this.presentedScene!;</span>
+<span style="color:green;">      const xrCamera = scene.getCamera();</span>
+<span style="color:green;">      const {position: optimalPosition, scale: optimalScale} = </span>
+<span style="color:green;">          this.calculateWorldSpaceOptimalPlacement(scene, xrCamera);</span>
+<span style="color:green;">      </span>
+<span style="color:green;">      this.goalPosition.copy(optimalPosition);</span>
+<span style="color:green;">      this.goalScale = optimalScale;</span>
+<span style="color:green;">      this.initialModelScale = optimalScale;</span>
+<span style="color:green;">      </span>
+<span style="color:green;">      scene.pivot.position.copy(optimalPosition);</span>
+<span style="color:green;">      scene.pivot.scale.set(optimalScale, optimalScale, optimalScale);</span>
+<span style="color:green;">      </span>
+<span style="color:green;">      this.worldSpaceInitialPlacementDone = true;</span>
+<span style="color:green;">      this.calculateWorldSpaceScaleLimits(scene);</span>
+<span style="color:green;">      this.enableWorldSpaceUserInteraction();</span>
+<span style="color:green;">      </span>
+<span style="color:green;">      scene.visible</span> = <span style="color:red;">false;</span><span style="color:green;">true;</span>
+      this.dispatchEvent({type: 'status', status: ARStatus.OBJECT_PLACED});
+      return;
+    }
+  
+    <span style="color:red;">const hitSource = this.initialHitSource;</span>
+<span style="color:red;">    if (!hitSource) return;</span>
+<span style="color:red;">  </span>
+<span style="color:red;">    const hits = frame.getHitTestResults(hitSource);</span><span style="color:green;">// Skip for world-space mode after initial placement (unless ceiling was deferred)</span>
+    if <span style="color:red;">(hits.length</span><span style="color:green;">(this.xrMode</span> === <span style="color:red;">0) return;</span>
+<span style="color:red;">  </span>
+<span style="color:red;">    const hitPoint</span><span style="color:green;">XRMode.WORLD_SPACE &amp;&amp; this.worldSpaceInitialPlacementDone) {</span>
+<span style="color:green;">      this.placementBox!.show</span> = <span style="color:red;">this.getHitPoint(hits[0]);  // applies normal filtering</span>
+<span style="color:red;">    if (!hitPoint)</span><span style="color:green;">false;</span>
+<span style="color:green;">      this.dispatchEvent({type: 'status', status: ARStatus.OBJECT_PLACED});</span>
+      return;
+    <span style="color:green;">}</span>
+<span style="color:green;">  }</span>
+  
+  <span style="color:red;">this.placementBox!.show</span><span style="color:green;">private isViewPointingUp(thresholdDeg: number</span> = <span style="color:red;">true;</span>
+<span style="color:red;">    this.presentedScene!.visible</span><span style="color:green;">CEILING_ORIENTATION_THRESHOLD): boolean {</span>
+<span style="color:green;">    const cam</span> = <span style="color:red;">!(this.placeOnCeiling</span><span style="color:green;">this.presentedScene!.getCamera();</span>
+<span style="color:green;">    </span>
+<span style="color:green;">    // Handle ArrayCamera (common in XR)</span>
+<span style="color:green;">    const realCam: any = (cam as any).isArrayCamera</span> &amp;&amp; <span style="color:red;">!this.placementComplete);</span><span style="color:green;">Array.isArray((cam as any).cameras)</span>
+<span style="color:green;">      ? (cam as any).cameras[0]  // Use first sub-camera</span>
+<span style="color:green;">      : cam;</span>
+  
+    if <span style="color:red;">(!this.isTranslating) {</span>
+<span style="color:red;">      if (this.placeOnWall) {</span>
+<span style="color:red;">        this.goalPosition.copy(hitPoint);               // wall → full XYZ</span>
+<span style="color:red;">      } else if (this.placeOnCeiling) {</span>
+<span style="color:red;">        this.goalPosition.copy(hitPoint);</span>
+<span style="color:red;">      } else {</span>
+<span style="color:red;">      </span>
+<span style="color:red;">        this.goalPosition.y = hitPoint.y;               // floor → drop only Y</span>
+<span style="color:red;">      }</span><span style="color:green;">(!realCam || typeof realCam.updateMatrixWorld !== 'function') {</span>
+<span style="color:green;">      return false;</span>
+    }
+  
+    <span style="color:red;">hitSource.cancel();</span>
+<span style="color:red;">    this.initialHitSource = null;</span>
+<span style="color:red;">    this.placementComplete</span><span style="color:green;">// Update camera matrix to get current world orientation</span>
+<span style="color:green;">    realCam.updateMatrixWorld(true);</span>
+<span style="color:green;">    const elements</span> = <span style="color:red;">true;</span>
+<span style="color:red;">    this.presentedScene!.visible</span><span style="color:green;">realCam.matrixWorld.elements;</span>
+<span style="color:green;">    </span>
+<span style="color:green;">    // Get forward direction from camera matrix (-Z column)</span>
+<span style="color:green;">    const forwardY</span> = <span style="color:red;">true;</span><span style="color:green;">-elements[9];</span> // <span style="color:red;">reveal after hit</span>
+<span style="color:red;">  </span>
+<span style="color:red;">    this.dispatchEvent({type: 'status', status: ARStatus.OBJECT_PLACED});</span><span style="color:green;">Y component of forward vector</span>
+<span style="color:green;">    const minY = Math.sin(thresholdDeg * Math.PI / 180);</span>
+
+<span style="color:green;">    return forwardY &gt;= minY;</span>
+  }
+  
+
+  private onSelectStart = (event: Event) =&gt; {
+    const hitSource = this.transientHitTestSource;
+<span style="color:teal;">@@ -1281,7 +1372,6 @@</span> export class ARRenderer extends EventDispatcher&lt;
+    }
+
+    this.frame = frame;
+<span style="color:red;">    this.ensureCeilingHitTestSource(frame);</span>
+    // increamenets a counter tracking how many frames have been processed sinces the session started
+    ++this.frames;
+    // refSpace and pose are used to get the user's current position and orientation in the XR session.
+<span style="color:teal;">@@ -1320,6 +1410,7 @@</span> export class ARRenderer extends EventDispatcher&lt;
+      this.updateView(view);
+
+      if (isFirstView) {
+        <span style="color:green;">this.checkForDeferredCeilingPlacement();</span>
+        this.handleFirstView(frame, time);
+        isFirstView = false;
+      }
+<span style="color:teal;">@@ -1328,43 +1419,6 @@</span> export class ARRenderer extends EventDispatcher&lt;
+    }
+  }
+
+<span style="color:red;">  // ToDo check if this method is really necessary.</span>
+<span style="color:red;">  // Compiler wont let the code compile without this function...</span>
+<span style="color:red;">  private ensureCeilingHitTestSource(frame: XRFrame) {</span>
+<span style="color:red;">    if (!this.placeOnCeiling || this.initialHitSource) return;</span>
+<span style="color:red;">  </span>
+<span style="color:red;">    // Guard frame and session </span>
+<span style="color:red;">    // ToDo is this necessary?</span>
+<span style="color:red;">    const session = frame?.session;</span>
+<span style="color:red;">    if (!session) return;</span>
+<span style="color:red;">  </span>
+<span style="color:red;">    const hasRequestHitTestSource =</span>
+<span style="color:red;">      'requestHitTestSource' in session &amp;&amp;</span>
+<span style="color:red;">      typeof (session as any).requestHitTestSource === 'function';</span>
+<span style="color:red;">  </span>
+<span style="color:red;">    if (!hasRequestHitTestSource) {</span>
+<span style="color:red;">      return;</span>
+<span style="color:red;">    }</span>
+<span style="color:red;">  </span>
+<span style="color:red;">    // Use viewer reference space for the directional ray</span>
+<span style="color:red;">    session.requestReferenceSpace('viewer')</span>
+<span style="color:red;">      .then(viewerSpace =&gt; {</span>
+<span style="color:red;">        const r = CEILING_HIT_ANGLE_DEG * Math.PI / 180;</span>
+<span style="color:red;">        return (session as any).requestHitTestSource({</span>
+<span style="color:red;">          space: viewerSpace,</span>
+<span style="color:red;">          offsetRay: new XRRay(</span>
+<span style="color:red;">            new DOMPoint(0, 0, 0),</span>
+<span style="color:red;">            { x: 0, y: Math.sin(r), z: -Math.cos(r) }</span>
+<span style="color:red;">          ),</span>
+<span style="color:red;">        });</span>
+<span style="color:red;">      })</span>
+<span style="color:red;">      .then((src: XRHitTestSource) =&gt; {</span>
+<span style="color:red;">        this.initialHitSource = src;</span>
+<span style="color:red;">      })</span>
+<span style="color:red;">      .catch(() =&gt; {</span>
+<span style="color:red;">        // Not ready yet (e.g., early frames); silently retry next frame</span>
+<span style="color:red;">      });</span>
+<span style="color:red;">  }</span>
+
+  /**
+  * Calculate optimal scale and position for world-space AR presentation
+</pre>
+</body>
+</html>

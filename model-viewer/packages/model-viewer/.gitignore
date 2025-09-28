@@ -1,0 +1,7 @@
+renderers/*
+node_modules/*
+lib/*
+**/*.sw*
+.DS_Store
+.idea
+*.iml

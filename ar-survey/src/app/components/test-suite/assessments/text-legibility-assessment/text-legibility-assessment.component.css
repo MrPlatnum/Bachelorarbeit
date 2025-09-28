@@ -1,0 +1,25 @@
+.ar-controls {
+  display: none;
+}
+
+.ar-hotspot {
+    display: none;
+}
+
+.ar-prompt {
+    display: none;
+}
+
+model-viewer[ar-status="session-started"]:not([ar-tracking="tracking"]) .ar-prompt {
+    display: block;
+}
+
+
+model-viewer[ar-tracking="tracking"] .ar-hotspot,
+model-viewer[ar-tracking="tracking"] .ar-controls {
+    display: block;
+}
+
+model-viewer[ar-tracking="tracking"] .ar-controls {
+    display: flex;
+}

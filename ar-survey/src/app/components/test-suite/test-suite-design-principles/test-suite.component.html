@@ -1,0 +1,87 @@
+<div class="max-w-4xl mx-auto p-2 bg-white rounded-lg shadow-lg mt-8">
+
+  <div class="mb-6">
+
+    <div class="assessment-container" class="h-full" style="min-height: 500px;">
+      <div *ngIf="currentTest === 1" class="w-full h-full flex flex-col">
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4 font-mono text-sm">
+          <div class="text-black-600">
+            <h2 class="text-base mb-2">In dieser Simulation geht es darum ein Einkaufserlebnis in Augmented Reality für
+              Objekte zu simulieren die an der Decke befestigt werden können. Stellen Sie sich vor sie wollen in einem
+              Onlineshop eine Lampe kaufen. Betrachten Sie die Lampe genau von mehreren Seiten. Wenn Sie mit der
+              Betrachtung zufriden sich können sie die AR Umgebung mit dem X schliesen und das Einkaufserlebnis beenden.
+            </h2>
+          </div>
+        </div>
+
+        <div class="flex-1 min-h-0">
+          <app-ceiling-placement-demonstrator (testComplete)="onTestComplete()"
+            (redoTest)="redoTest(1)"></app-ceiling-placement-demonstrator>
+        </div>
+      </div>
+
+      Assessment 1
+      <div *ngIf="currentTest === 1" class="w-full h-full flex flex-col">
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4 font-mono text-sm">
+          <div class="text-black-600">
+            <h2 class="text-base mb-2">In diesem Test geht es darum, die Lesbarkeit von Texten in
+              Augmented-Reality-Umgebungen (AR) im Kontext von Deckenflächen zu untersuchen.</h2>
+            <ul class="list-disc pl-4 space-y-1">
+              <li>Stellen Sie bitte zunächst die Textgröße auf die <strong>minimale</strong> Stufe ein, bei der Sie den
+                Text gerade noch entziffern können.</li>
+              <li>Passen Sie als Nächstes die Textgröße auf die <strong>maximale</strong> Stufe an, bei der der gesamte
+                Inhalt noch vollständig auf dem Bildschirm sichtbar bleibt.</li>
+              <li>Wählen Sie zum Abschluss die Schriftgröße, die Sie persönlich als am <strong>angenehmsten</strong>
+                empfinden.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="flex-1 min-h-0">
+          <app-text-legibility-assessment (testComplete)="onTestComplete()"
+            (redoTest)="redoTest(1)"></app-text-legibility-assessment>
+        </div>
+      </div>
+
+      <div *ngIf="currentTest === 2" class="w-full h-full flex flex-col">
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4 font-mono text-sm">
+          <div class="text-black-600">
+            <h2 class="text-base mb-2">In diesem Test soll untersucht werden, welche Position eines virtuellen Objekts
+              an der Decke als ideal empfunden wird.</h2>
+            <p>Stellen Sie die beiden Schieberegler bitte so ein, dass das Modell für Sie optisch ansprechend und
+              realistisch an der Decke platziert ist.</p>
+          </div>
+        </div>
+        <div class="flex-1 min-h-0">
+          <app-spatial-position-assessment (testComplete)="onTestComplete()"
+            (redoTest)="redoTest(2)"></app-spatial-position-assessment>
+        </div>
+      </div>
+
+      <div *ngIf="currentTest === 3" class="w-full h-full flex flex-col">
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4 font-mono text-sm">
+          <div class="text-black-600">
+            <h2 class="text-base mb-2">In diesem Testabschnitt wird die ergonomisch optimale Positionierung eines
+              virtuellen Objekts an der Decke untersucht.</h2>
+            <ul class="list-disc pl-4 space-y-1">
+              <li>Das Ziel ist, eine Position zu finden, die es Ihnen erlaubt, das Objekt für 20 Sekunden mit möglichst
+                geringer körperlicher Anstrengung zu betrachten.</li>
+              <li>Positionieren Sie das virtuelle Objekt mithilfe der Steuerung an der Decke.</li>
+              <li>Bestätigen Sie Ihre Auswahl, um den 20 Sekunden Timer zu starten.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="flex-1 min-h-0">
+          <app-spatial-stability-assessment (testComplete)="onTestComplete()"
+            (redoTest)="redoTest(3)"></app-spatial-stability-assessment>
+        </div>
+      </div>
+
+      <div *ngIf="currentTest === 2" class="w-full h-full overflow-auto">
+        <app-feedback (testComplete)="onTestComplete()" (redoTest)="redoTest(4)"></app-feedback>
+      </div>
+
+    </div>
+
+
+  </div>

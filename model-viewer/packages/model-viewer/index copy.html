@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ceiling-AR Design Parameter Assessment Suite</title>
+  <script type="module" src="./dist/model-viewer.js"></script>
+  <style>
+    /* This keeps child nodes hidden while the element loads */
+    :not(:defined) > * {
+      display: none;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f7fa;
+      line-height: 1.6;
+    }
+
+    .test-container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    model-viewer {
+      width: 100%;
+      height: 400px;
+      background-color: #eee;
+      overflow-x: hidden;
+    }
+
+    .webxr-container {
+      width: 100%;
+      height: 120px;
+      background: transparent;
+    }
+
+    .webxr-container > :not([slot="ar-button"]) {
+      display: none !important;
+    }
+
+    /* WebXR UI Elements */
+    .vr-ui-container {
+      position: absolute;
+      bottom: 16px;
+      width: 100%;
+      text-align: center;
+      pointer-events: none;
+      display: none;
+    }
+
+    model-viewer[ar-status="session-started"] .vr-ui-container {
+      display: block;
+      pointer-events: auto;
+    }
+
+    .vr-slider {
+      position: absolute;
+      bottom: 120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 300px;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      backdrop-filter: blur(10px);
+    }
+
+    .vr-slider input[type="range"] {
+      width: 100%;
+      margin: 10px 0;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 3px;
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    .vr-slider input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background: #4285f4;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .vr-slider input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      background: #4285f4;
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+    }
+
+    .vr-controls {
+      position: absolute;
+      bottom: 200px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+    }
+
+    .vr-button {
+      background: rgba(66, 133, 244, 0.9);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+      backdrop-filter: blur(10px);
+    }
+
+    .vr-button:hover {
+      background: rgba(66, 133, 244, 1);
+    }
+
+    .vr-text-display {
+      position: absolute;
+      bottom: 280px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 15px;
+      border-radius: 10px;
+      max-width: 250px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    /* Regular UI styles */
+    .test-instructions {
+      background: linear-gradient(135deg, #e3f2fd, #f0f8ff);
+      padding: 25px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+      border-left: 4px solid #2196F3;
+    }
+
+    .test-instructions h3 {
+      margin-top: 0;
+      color: #1976d2;
+    }
+
+    .button-container {
+      text-align: center;
+      margin: 25px 0;
+    }
+
+    button {
+      background: #2196F3;
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background: #1976D2;
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      background: #adb5bd;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .redo-button {
+      background: #ff9800;
+    }
+
+    .redo-button:hover {
+      background: #f57c00;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .consent-box {
+      background: #fff8e1;
+      border: 1px solid #ffcc02;
+      padding: 25px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #e9ecef;
+      border-radius: 4px;
+      margin: 20px 0;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #2196F3, #21CBF3);
+      transition: width 0.3s ease;
+      border-radius: 4px;
+    }
+
+    .status-display {
+      background: #f8f9fa;
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+
+    #ar-button {
+      background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSIjNDI4NWY0Ii8+Cjwvc3ZnPgo=);
+      background-repeat: no-repeat;
+      background-size: 20px 20px;
+      background-position: 12px 50%;
+      background-color: #fff;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      bottom: 132px;
+      padding: 0px 16px 0px 40px;
+      font-family: Roboto Regular, Helvetica Neue, sans-serif;
+      font-size: 14px;
+      color: #4285f4;
+      height: 36px;
+      line-height: 36px;
+      border-radius: 18px;
+      border: 1px solid #DADCE0;
+    }
+
+    #ar-button:active {
+      background-color: #E8EAED;
+    }
+
+    #ar-button:focus {
+      outline: none;
+    }
+
+    #ar-button:focus-visible {
+      outline: 1px solid #4285f4;
+    }
+
+    @media (max-width: 768px) {
+      .test-container {
+        padding: 15px;
+      }
+      
+      .vr-slider {
+        width: 250px;
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Informed Consent -->
+  <div id="consent-screen" class="test-container">
+    <div class="consent-box">
+      <h2>Informed Consent - Ceiling-AR Design Parameter Assessment</h2>
+      <p><strong>Purpose:</strong> This empirical study investigates optimal design parameters for ceiling-based augmented reality applications within a Design Science Research framework for academic research purposes.</p>
+
+      <p><strong>Data Collection Protocol:</strong></p>
+      <ul>
+        <li>Device specifications (display dimensions, browser version, operating system)</li>
+        <li>WebXR interaction metrics and motion tracking data</li>
+        <li>Parameter adjustment patterns and timing</li>
+        <li>Device orientation and viewing angle parameters</li>
+        <li>First input detection and natural gesture analysis</li>
+        <li>Optional demographic information (age)</li>
+      </ul>
+
+      <p><strong>Data Protection:</strong> All collected data will be anonymized and used exclusively for scientific analysis. No personally identifiable information is recorded.</p>
+
+      <p><strong>Voluntary Participation:</strong> Participation is entirely voluntary. You may withdraw at any time without consequence.</p>
+
+      <label>
+        <input type="checkbox" id="consent-checkbox">
+        I consent to data collection and agree to participate in this research study.
+      </label>
+    </div>
+    <button onclick="startTestSuite()" id="start-button" disabled>Initialize Assessment Suite</button>
+  </div>
+
+  <!-- Assessment Suite Container -->
+  <div id="test-suite" class="test-container hidden">
+    <h1>Ceiling-AR Design Parameter Assessment Suite</h1>
+    <div id="progress">Assessment <span id="current-test">1</span> of <span id="total-tests">7</span></div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill" style="width: 14.3%"></div>
+    </div>
+
+    <div id="status-display" class="status-display">
+      Status: Ready to begin assessments
+    </div>
+
+    <!-- Assessment 1: First Input Detection -->
+    <div id="test-1" class="test-phase">
+      <div class="test-instructions">
+        <h3>Assessment 1: Natural Interaction Detection</h3>
+        <p><strong>Objective:</strong> Capture your first natural interaction with ceiling-mounted AR content to understand intuitive user behavior patterns.</p>
+        <p><strong>Procedure:</strong> Enter WebXR and make your first natural gesture. The system will automatically record this interaction and proceed to the next test.</p>
+      </div>
+
+      <model-viewer 
+          id="first-input-model" 
+          src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
+          ar
+          ar-modes="webxr"
+          camera-orbit="0deg 75deg 2m"
+          ar-placement="ceiling"
+          reveal="manual">
+          
+          <button slot="ar-button" id="ar-button">
+              Enter WebXR - First Input Test
+          </button>
+
+          <div class="vr-ui-container">
+            <div class="vr-text-display">
+              <div id="first-input-status">Make your first natural gesture</div>
+            </div>
+          </div>
+      </model-viewer>
+
+      <div class="button-container">
+        <button onclick="manualCompleteFirstTest()" id="first-input-done" class="hidden">Manual Complete</button>
+        <button onclick="redoTest(1)" class="redo-button hidden" id="first-input-redo">Redo Assessment</button>
+      </div>
+    </div>
+
+    <!-- Assessment 2: Rotation Speed Optimization -->
+    <div id="test-2" class="test-phase hidden">
+      <div class="test-instructions">
+        <h3>Assessment 2: Rotation Speed Optimization</h3>
+        <p><strong>Objective:</strong> Determine optimal rotation speed for ceiling-AR applications through direct WebXR interaction.</p>
+        <p><strong>Procedure:</strong> Use the slider in WebXR to adjust rotation speed. Find your preferred speed for ceiling-based object examination.</p>
+      </div>
+
+      <model-viewer 
+          id="speed-model" 
+          src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
+          ar
+          ar-modes="webxr"
+          camera-orbit="0deg 75deg 2m"
+          ar-placement="ceiling"
+          auto-rotate
+          reveal="manual">
+          
+          <button slot="ar-button" id="ar-button">
+              Enter WebXR - Speed Test
+          </button>
+
+          <div class="vr-ui-container">
+            <div class="vr-slider">
+              <div style="margin-bottom: 10px;">Rotation Speed</div>
+              <input type="range" id="speed-slider-vr" min="10" max="100" step="5" value="50">
+              <div id="speed-value-vr" style="text-align: center;">50%</div>
+            </div>
+            <div class="vr-controls">
+              <button class="vr-button" onclick="confirmSpeedSetting()">Confirm Speed</button>
+            </div>
+          </div>
+      </model-viewer>
+
+      <div class="button-container">
+        <button onclick="nextTest()" id="speed-done" class="hidden">Confirm Speed Setting</button>
+        <button onclick="redoTest(2)" class="redo-button hidden" id="speed-redo">Redo Assessment</button>
+      </div>
+    </div>
+
+    <!-- Assessment 3: Distance and Angle Optimization -->
+    <div id="test-3" class="test-phase hidden">
+      <div class="test-instructions">
+        <h3>Assessment 3: Ergonomic Position Optimization</h3>
+        <p><strong>Objective:</strong> Find optimal viewing distance and angle for comfortable ceiling-AR interaction.</p>
+        <p><strong>Procedure:</strong> Use WebXR sliders to adjust viewing distance and angle. Position for maximum comfort.</p>
+      </div>
+
+      <model-viewer 
+          id="ergonomic-model" 
+          src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
+          ar
+          ar-modes="webxr"
+          camera-orbit="0deg 75deg 2m"
+          ar-placement="ceiling"
+          reveal="manual">
+          
+          <button slot="ar-button" id="ar-button">
+              Enter WebXR - Ergonomic Test
+          </button>
+
+          <div class="vr-ui-container">
+            <div class="vr-slider">
+              <div style="margin-bottom: 10px;">Distance: <span id="distance-value-vr">2.0m</span></div>
+              <input type="range" id="distance-slider-vr" min="0.5" max="4.0" step="0.1" value="2.0">
+              <div style="margin: 15px 0 10px;">Angle: <span id="angle-value-vr">75°</span></div>
+              <input type="range" id="angle-slider-vr" min="45" max="90" step="5" value="75">
+            </div>
+            <div class="vr-controls">
+              <button class="vr-button" onclick="confirmErgonomicSettings()">Confirm Settings</button>
+            </div>
+          </div>
+      </model-viewer>
+
+      <div class="button-container">
+        <button onclick="nextTest()" id="ergonomic-done" class="hidden">Confirm Position Settings</button>
+        <button onclick="redoTest(3)" class="redo-button hidden" id="ergonomic-redo">Redo Assessment</button>
+      </div>
+    </div>
+
+    <!-- Assessment 4: Text Size Optimization -->
+    <div id="test-4" class="test-phase hidden">
+      <div class="test-instructions">
+        <h3>Assessment 4: Text Legibility Optimization</h3>
+        <p><strong>Objective:</strong> Determine optimal text scaling for ceiling-AR applications ensuring readability at viewing angles.</p>
+        <p><strong>Procedure:</strong> Adjust text size using WebXR slider until text is clearly legible yet appropriately sized.</p>
+      </div>
+
+      <model-viewer 
+          id="text-model" 
+          src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
+          ar
+          ar-modes="webxr"
+          camera-orbit="0deg 75deg 2m"
+          ar-placement="ceiling"
+          reveal="manual">
+          
+          <button slot="ar-button" id="ar-button">
+              Enter WebXR - Text Size Test
+          </button>
+          
+          <button class="hotspot" slot="hotspot-text" data-position="0.2 0.1 0.1" data-normal="0 1 0">
+            <div class="annotation" id="test-text" style="font-size: 16px; background: rgba(255,255,255,0.9); padding: 10px; border-radius: 5px; color: black;">
+              This sample text represents typical information display requirements for ceiling-AR applications.
+              Text must remain legible despite challenging viewing angles inherent to overhead displays.
+            </div>
+          </button>
+
+          <div class="vr-ui-container">
+            <div class="vr-slider">
+              <div style="margin-bottom: 10px;">Text Size: <span id="text-size-value-vr">16px</span></div>
+              <input type="range" id="text-size-slider-vr" min="10" max="32" step="2" value="16">
+            </div>
+            <div class="vr-controls">
+              <button class="vr-button" onclick="confirmTextSize()">Confirm Text Size</button>
+            </div>
+          </div>
+      </model-viewer>
+
+      <div class="button-container">
+        <button onclick="nextTest()" id="text-done" class="hidden">Confirm Text Size</button>
+        <button onclick="redoTest(4)" class="redo-button hidden" id="text-redo">Redo Assessment</button>
+      </div>
+    </div>
+
+    <!-- Assessment 5: Scale Reference -->
+    <div id="test-5" class="test-phase hidden">
+      <div class="test-instructions">
+        <h3>Assessment 5: Scale Reference Calibration</h3>
+        <p><strong>Objective:</strong> Establish optimal object scaling using natural size perception for ceiling-AR content.</p>
+        <p><strong>Procedure:</strong> Adjust object scale in WebXR until it appears at an appropriate size reference.</p>
+      </div>
+
+      <model-viewer 
+          id="reference-model" 
+          src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
+          ar
+          ar-modes="webxr"
+          camera-orbit="0deg 75deg 2m"
+          ar-placement="ceiling"
+          reveal="manual">
+          
+          <button slot="ar-button" id="ar-button">
+              Enter WebXR - Scale Reference Test
+          </button>
+
+          <div class="vr-ui-container">
+            <div class="vr-slider">
+              <div style="margin-bottom: 10px;">Object Scale: <span id="scale-value-vr">100%</span></div>
+              <input type="range" id="scale-slider-vr" min="30" max="300" step="10" value="100">
+            </div>
+            <div class="vr-controls">
+              <button class="vr-button" onclick="confirmScale()">Confirm Scale</button>
+            </div>
+          </div>
+      </model-viewer>
+
+      <div class="button-container">
+        <button onclick="nextTest()" id="reference-done" class="hidden">Confirm Scale Reference</button>
+        <button onclick="redoTest(5)" class="redo-button hidden" id="reference-redo">Redo Assessment</button>
+      </div>
+    </div>
+
+    <!-- Assessment 6: Spatial Positioning -->
+    <div id="test-6" class="test-phase hidden">
+      <div class="test-instructions">
+        <h3>Assessment 6: Spatial Positioning Optimization</h3>
+        <p><strong>Objective:</strong> Determine optimal spatial positioning for ceiling-AR content placement achieving natural ceiling integration.</p>
+        <p><strong>Procedure:</strong> Adjust X/Y positioning in WebXR to achieve optimal visual anchoring.</p>
+      </div>
+
+      <model-viewer 
+          id="ceiling-model" 
+          src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
+          ar
+          ar-modes="webxr"
+          camera-orbit="0deg 90deg 2.5m"
+          ar-placement="ceiling"
+          reveal="manual">
+          
+          <button slot="ar-button" id="ar-button">
+              Enter WebXR - Spatial Position Test
+          </button>
+
+          <div class="vr-ui-container">
+            <div class="vr-slider">
+              <div style="margin-bottom: 10px;">X Position: <span id="x-pos-value-vr">0</span></div>
+              <input type="range" id="x-position-slider-vr" min="-2" max="2" step="0.1" value="0">
+              <div style="margin: 15px 0 10px;">Y Position: <span id="y-pos-value-vr">0</span></div>
+              <input type="range" id="y-position-slider-vr" min="-2" max="2" step="0.1" value="0">
+            </div>
+            <div class="vr-controls">
+              <button class="vr-button" onclick="confirmPosition()">Confirm Position</button>
+            </div>
+          </div>
+      </model-viewer>
+
+      <div class="button-container">
+        <button onclick="nextTest()" id="ceiling-done" class="hidden">Confirm Spatial Position</button>
+        <button onclick="redoTest(6)" class="redo-button hidden" id="ceiling-redo">Redo Assessment</button>
+      </div>
+    </div>
+
+    <!-- Assessment 7: Demographics and Completion -->
+    <div id="test-7" class="test-phase hidden">
+      <div class="test-instructions">
+        <h3>Assessment 7: Study Completion and Data Collection</h3>
+        <p><strong>Objective:</strong> Collect final evaluations and demographic information for comprehensive analysis.</p>
+        <p><strong>Procedure:</strong> Provide overall assessment and any additional observations regarding the ceiling-AR interaction experience.</p>
+      </div>
+
+      <div style="margin: 20px 0;">
+        <label style="display: block; margin-bottom: 10px;">Age (optional for demographic analysis):</label>
+        <input type="number" id="age-input" min="16" max="99" placeholder="e.g., 25" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+      </div>
+
+      <div style="margin: 20px 0;">
+        <label style="display: block; margin-bottom: 10px;">Additional observations or feedback:</label>
+        <textarea id="feedback-textarea" style="width: 100%; height: 120px; padding: 10px; border-radius: 4px; border: 1px solid #ccc;"
+          placeholder="Please describe any notable observations, challenges experienced with ceiling-AR interaction, or suggestions for interface improvements..."></textarea>
+      </div>
+
+      <div style="margin: 20px 0;">
+        <label style="display: block; margin-bottom: 15px;">Overall ceiling-AR interaction experience rating (1-10):</label>
+        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+          <label style="display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 10px; border-radius: 6px;">
+            <input type="radio" name="overall" value="1">1<br><small>Poor</small>
+          </label>
+          <label style="display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 10px; border-radius: 6px;">
+            <input type="radio" name="overall" value="3">3<br><small>Below average</small>
+          </label>
+          <label style="display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 10px; border-radius: 6px;">
+            <input type="radio" name="overall" value="5">5<br><small>Average</small>
+          </label>
+          <label style="display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 10px; border-radius: 6px;">
+            <input type="radio" name="overall" value="7">7<br><small>Above average</small>
+          </label>
+          <label style="display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 10px; border-radius: 6px;">
+            <input type="radio" name="overall" value="10">10<br><small>Excellent</small>
+          </label>
+        </div>
+      </div>
+
+      <div class="button-container">
+        <button onclick="completeTestSuite()">Complete Assessment Suite & Export Data</button>
+        <button onclick="redoTest(7)" class="redo-button">Redo Final Assessment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Completion Screen -->
+  <div id="completion-screen" class="test-container hidden">
+    <h2>Assessment Suite Completed Successfully</h2>
+    <p>Thank you for your participation in this research study. Your data has been successfully collected and is ready for download.</p>
+    <div class="button-container">
+      <button onclick="downloadResults()">Download Results as CSV</button>
+    </div>
+    <div id="data-preview" class="status-display" style="max-height: 300px; overflow-y: auto;">
+    </div>
+  </div>
+
+  <script>
+    class CeilingARLogger {
+      constructor() {
+        this.sessionId = this.generateSessionId();
+        this.startTime = Date.now();
+        this.currentTest = 0;
+        this.xrSession = null;
+        this.firstInputDetected = false;
+        this.motionLog = [];
+        this.sessionStartTime = null;
+        
+        this.testData = {
+          device: {
+            sessionId: this.sessionId,
+            userAgent: navigator.userAgent,
+            displayWidth: window.innerWidth,
+            displayHeight: window.innerHeight,
+            pixelRatio: window.devicePixelRatio,
+            platform: navigator.platform,
+            language: navigator.language,
+            timestamp: new Date().toISOString()
+          },
+          results: {
+            firstInputTest: {
+              duration: 0,
+              firstInputType: null,
+              firstInputData: null,
+              motionFrames: 0,
+              sessionDuration: 0,
+              completedSuccessfully: false
+            },
+            speedTest: {
+              finalSpeed: 50,
+              adjustments: [],
+              interactionCount: 0,
+              timeInVR: 0,
+              completedSuccessfully: false
+            },
+            ergonomicTest: {
+              finalDistance: 2.0,
+              finalAngle: 75,
+              distanceAdjustments: [],
+              angleAdjustments: [],
+              interactionCount: 0,
+              timeInVR: 0,
+              completedSuccessfully: false
+            },
+            textTest: {
+              finalTextSize: 16,
+              adjustments: [],
+              interactionCount: 0,
+              timeInVR: 0,
+              completedSuccessfully: false
+            },
+            referenceTest: {
+              finalScale: 100,
+              adjustments: [],
+              interactionCount: 0,
+              timeInVR: 0,
+              completedSuccessfully: false
+            },
+            ceilingTest: {
+              finalXPosition: 0,
+              finalYPosition: 0,
+              xAdjustments: [],
+              yAdjustments: [],
+              interactionCount: 0,
+              timeInVR: 0,
+              completedSuccessfully: false
+            },
+            demographics: {
+              age: null,
+              feedback: '',
+              overallRating: null
+            }
+          }
+        };
+
+        this.setupEventListeners();
+      }
+
+      generateSessionId() {
+        return 'CEILING_AR_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      }
+
+      setupEventListeners() {
+        // Setup device orientation tracking
+        if (window.DeviceOrientationEvent) {
+          window.addEventListener('deviceorientation', (e) => {
+            this.logDeviceOrientation(e);
+          });
+        }
+
+        // Setup touch tracking
+        document.addEventListener('touchstart', (e) => {
+          this.logTouchEvent('touchstart', e);
+        });
+      }
+
+      logDeviceOrientation(event) {
+        const orientationData = {
+          timestamp: Date.now(),
+          alpha: event.alpha,
+          beta: event.beta,
+          gamma: event.gamma
+        };
+
+        if (!this.testData.orientationLog) {
+          this.testData.orientationLog = [];
+        }
+        this.testData.orientationLog.push(orientationData);
+      }
+
+      logTouchEvent(type, event) {
+        if (this.currentTest > 0) {
+          const touchData = {
+            timestamp: Date.now(),
+            type: type,
+            x: event.touches?.[0]?.clientX || 0,
+            y: event.touches?.[0]?.clientY || 0,
+            currentTest: this.currentTest
+          };
+
+          if (!this.testData.touchLog) {
+            this.testData.touchLog = [];
+          }
+          this.testData.touchLog.push(touchData);
+        }
+      }
+
+      initializeWebXRTracking(modelViewer, testType) {
+        modelViewer.addEventListener('ar-status', (event) => {
+          if (event.detail.status === 'session-started') {
+            this.xrSession = modelViewer.model.webXRCamera.session;
+            this.sessionStartTime = performance.now();
+            this.firstInputDetected = false;
+            this.motionLog = [];
+            
+            console.log(`WebXR session started for ${testType}`);
+            this.updateStatus(`WebXR active - ${testType}`);
+            
+            if (testType === 'firstInput') {
+              this.setupFirstInputTracking();
+            }
+          }
+        });
+      }
+
+      setupFirstInputTracking() {
+        if (!this.xrSession) return;
+        
+        const onXRFrame = (time, frame) => {
+          if (!this.xrSession || this.firstInputDetected) return;
+          
+          const inputSources = this.xrSession.inputSources;
+          
+          for (let inputSource of inputSources) {
+            if (inputSource.gripSpace) {
+              const gripPose = frame.getPose(inputSource.gripSpace, this.xrSession.renderState.baseLayer.framebuffer);
+              if (gripPose) {
+                this.logMotionData({
+                  timestamp: performance.now() - this.sessionStartTime,
+                  type: 'grip',
+                  position: gripPose.transform.position,
+                  orientation: gripPose.transform.orientation,
+                  inputSource: inputSource.handedness
+                });
+              }
+            }
+            
+            // Check for first input
+            if (inputSource.gamepad) {
+              inputSource.gamepad.buttons.forEach((button, index) => {
+                if (button.pressed && !this.firstInputDetected) {
+                  this.handleFirstInput('button', { buttonIndex: index, inputSource: inputSource.handedness });
+                  return;
+                }
+              });
+              
+              inputSource.gamepad.axes.forEach((axis, index) => {
+                if (Math.abs(axis) > 0.1 && !this.firstInputDetected) {
+                  this.handleFirstInput('axis', { axisIndex: index, value: axis, inputSource: inputSource.handedness });
+                  return;
+                }
+              });
+            }
+          }
+          
+          if (this.xrSession && !this.firstInputDetected) {
+            this.xrSession.requestAnimationFrame(onXRFrame);
+          }
+        };
+        
+        this.xrSession.requestAnimationFrame(onXRFrame);
+      }
+
+      logMotionData(data) {
+        this.motionLog.push({
+          ...data,
+          sessionDuration: performance.now() - this.sessionStartTime
+        });
+        
+        if (this.motionLog.length > 1000) {
+          this.motionLog = this.motionLog.slice(-500);
+        }
+      }
+
+      handleFirstInput(inputType, inputData) {
+        if (this.firstInputDetected) return;
+        
+        this.firstInputDetected = true;
+        const endTime = performance.now();
+        const sessionDuration = endTime - this.sessionStartTime;
+        
+        this.testData.results.firstInputTest.duration = sessionDuration;
+        this.testData.results.firstInputTest.firstInputType = inputType;
+        this.testData.results.firstInputTest.firstInputData = inputData;
+        this.testData.results.firstInputTest.motionFrames = this.motionLog.length;
+        this.testData.results.firstInputTest.sessionDuration = sessionDuration;
+        
+        console.log('First input detected:', inputType, inputData);
+        this.updateStatus(`First input detected: ${inputType} - Auto completing test`);
+        
+        // Update UI
+        document.getElementById('first-input-status').textContent = 'First input detected! Completing test...';
+        
+        // Auto-complete first test
+        setTimeout(() => {
+          this.exitWebXRSession();
+          this.markTestComplete('firstInputTest');
+          nextTest();
+        }, 2000);
+      }
+
+      logParameterAdjustment(testType, parameter, value) {
+        const adjustment = {
+          timestamp: Date.now(),
+          parameter: parameter,
+          value: value
+        };
+
+        const testNames = {
+          'speed': 'speedTest',
+          'ergonomic': 'ergonomicTest', 
+          'text': 'textTest',
+          'reference': 'referenceTest',
+          'ceiling': 'ceilingTest'
+        };
+
+        const testName = testNames[testType];
+        if (testName && this.testData.results[testName]) {
+          if (!this.testData.results[testName].adjustments) {
+            this.testData.results[testName].adjustments = [];
+          }
+          this.testData.results[testName].adjustments.push(adjustment);
+          this.testData.results[testName].interactionCount++;
+        }
+      }
+
+      exitWebXRSession() {
+        if (this.xrSession) {
+          this.xrSession.end().then(() => {
+            console.log('WebXR session ended');
+            this.xrSession = null;
+          }).catch(err => {
+            console.error('Error ending WebXR session:', err);
+          });
+        }
+      }
+
+      markTestComplete(testName) {
+        if (this.testData.results[testName]) {
+          this.testData.results[testName].completedSuccessfully = true;
+          this.testData.results[testName].endTime = Date.now();
+        }
+      }
+
+      updateStatus(message) {
+        const statusElement = document.getElementById('status-display');
+        if (statusElement) {
+          const timestamp = new Date().toLocaleTimeString();
+          statusElement.textContent = `[${timestamp}] ${message}`;
+        }
+      }
+
+      exportToCSV() {
+        const csvData = [];
+        
+        csvData.push([
+          'SessionID', 'TestType', 'Parameter', 'Value', 'Timestamp',
+          'DeviceWidth', 'DeviceHeight', 'UserAgent', 'Age', 'OverallRating', 'Completed'
+        ]);
+
+        Object.keys(this.testData.results).forEach(testName => {
+          const testResults = this.testData.results[testName];
+          Object.keys(testResults).forEach(param => {
+            csvData.push([
+              this.sessionId,
+              testName,
+              param,
+              JSON.stringify(testResults[param]),
+              Date.now(),
+              this.testData.device.displayWidth,
+              this.testData.device.displayHeight,
+              this.testData.device.userAgent,
+              this.testData.results.demographics.age || 'N/A',
+              this.testData.results.demographics.overallRating || 'N/A',
+              testResults.completedSuccessfully || false
+            ]);
+          });
+        });
+
+        return csvData;
+      }
+    }
+
+    let logger = new CeilingARLogger();
+    let currentTestIndex = 1;
+    const totalTests = 7;
+
+    // Initialize consent checkbox
+    document.getElementById('consent-checkbox').addEventListener('change', function () {
+      document.getElementById('start-button').disabled = !this.checked;
+    });
+
+    function updateProgress() {
+      const progress = (currentTestIndex / totalTests) * 100;
+      document.getElementById('progress-fill').style.width = progress + '%';
+      document.getElementById('current-test').textContent = currentTestIndex;
+    }
+
+    function startTestSuite() {
+      document.getElementById('consent-screen').classList.add('hidden');
+      document.getElementById('test-suite').classList.remove('hidden');
+      logger.updateStatus('Test suite started - Beginning Assessment 1');
+      showTest(1);
+      initializeFirstInputTest();
+    }
+
+    function showTest(testNumber) {
+      // Hide all tests
+      for (let i = 1; i <= totalTests; i++) {
+        document.getElementById(`test-${i}`).classList.add('hidden');
+      }
+
+      // Show current test
+      document.getElementById(`test-${testNumber}`).classList.remove('hidden');
+      currentTestIndex = testNumber;
+      logger.currentTest = testNumber;
+      updateProgress();
+    }
+
+    function initializeFirstInputTest() {
+      const modelViewer = document.getElementById('first-input-model');
+      logger.initializeWebXRTracking(modelViewer, 'firstInput');
+      
+      // Show manual complete button after 30 seconds
+      setTimeout(() => {
+        document.getElementById('first-input-done').classList.remove('hidden');
+        document.getElementById('first-input-redo').classList.remove('hidden');
+      }, 30000);
+    }
+
+    function manualCompleteFirstTest() {
+      if (!logger.firstInputDetected) {
+        logger.testData.results.firstInputTest.firstInputType = 'manual_completion';
+        logger.testData.results.firstInputTest.firstInputData = { reason: 'user_clicked_complete' };
+        logger.markTestComplete('firstInputTest');
+      }
+      nextTest();
+    }
+
+    // WebXR slider functions with event prevention
+    function setupWebXRSliders() {
+      // Speed test slider
+      const speedSlider = document.getElementById('speed-slider-vr');
+      if (speedSlider) {
+        speedSlider.addEventListener('beforexrselect', (ev) => {
+          ev.preventDefault();
+        });
+        speedSlider.addEventListener('input', function() {
+          const value = this.value;
+          document.getElementById('speed-value-vr').textContent = value + '%';
+          logger.testData.results.speedTest.finalSpeed = parseFloat(value);
+          logger.logParameterAdjustment('speed', 'rotationSpeed', parseFloat(value));
+          updateSpeedModel(value);
+        });
+      }
+
+      // Ergonomic test sliders
+      const distanceSlider = document.getElementById('distance-slider-vr');
+      if (distanceSlider) {
+        distanceSlider.addEventListener('beforexrselect', (ev) => {
+          ev.preventDefault();
+        });
+        distanceSlider.addEventListener('input', function() {
+          const value = this.value;
+          document.getElementById('distance-value-vr').textContent = value + 'm';
+          logger.testData.results.ergonomicTest.finalDistance = parseFloat(value);
+          logger.logParameterAdjustment('ergonomic', 'distance', parseFloat(value));
+          updateErgonomicModel();
+        });
+      }
+
+      const angleSlider = document.getElementById('angle-slider-vr');
+      if (angleSlider) {
+        angleSlider.addEventListener('beforexrselect', (ev) => {
+          ev.preventDefault();
+        });
+        angleSlider.addEventListener('input', function() {
+          const value = this.value;
+          document.getElementById('angle-value-vr').textContent = value + '°';
+          logger.testData.results.ergonomicTest.finalAngle = parseFloat(value);
+          logger.logParameterAdjustment('ergonomic', 'angle', parseFloat(value));
+          updateErgonomicModel();
+        });
+      }
+
+      // Text size slider
+      const textSizeSlider = document.getElementById('text-size-slider-vr');
+      if (textSizeSlider) {
+        textSizeSlider.addEventListener('beforexrselect', (ev) => {
+          ev.preventDefault();
+        });
+        textSizeSlider.addEventListener('input', function() {
+          const value = this.value;
+          document.getElementById('text-size-value-vr').textContent = value + 'px';
+          logger.testData.results.textTest.finalTextSize = parseFloat(value);
+          logger.logParameterAdjustment('text', 'fontSize', parseFloat(value));
+          updateTextSize(value);
+        });
+      }
+
+      // Scale slider
+      const scaleSlider = document.getElementById('scale-slider-vr');
+      if (scaleSlider) {
+        scaleSlider.addEventListener('beforexrselect', (ev) => {
+          ev.preventDefault();
+        });
+        scaleSlider.addEventListener('input', function() {
+          const value = this.value;
+          document.getElementById('scale-value-vr').textContent = value + '%';
+          logger.testData.results.referenceTest.finalScale = parseFloat(value);
+          logger.logParameterAdjustment('reference', 'scale', parseFloat(value));
+          updateReferenceScale(value / 100);
+        });
+      }
+
+      // Position sliders
+      const xPositionSlider = document.getElementById('x-position-slider-vr');
+      if (xPositionSlider) {
+        xPositionSlider.addEventListener('beforexrselect', (ev) => {
+          ev.preventDefault();
+        });
+        xPositionSlider.addEventListener('input', function() {
+          const value = this.value;
+          document.getElementById('x-pos-value-vr').textContent = value;
+          logger.testData.results.ceilingTest.finalXPosition = parseFloat(value);
+          logger.logParameterAdjustment('ceiling', 'xPosition', parseFloat(value));
+          updateCeilingPosition();
+        });
+      }
+
+      const yPositionSlider = document.getElementById('y-position-slider-vr');
+      if (yPositionSlider) {
+        yPositionSlider.addEventListener('beforexrselect', (ev) => {
+          ev.preventDefault();
+        });
+        yPositionSlider.addEventListener('input', function() {
+          const value = this.value;
+          document.getElementById('y-pos-value-vr').textContent = value;
+          logger.testData.results.ceilingTest.finalYPosition = parseFloat(value);
+          logger.logParameterAdjustment('ceiling', 'yPosition', parseFloat(value));
+          updateCeilingPosition();
+        });
+      }
+    }
+
+    // Model update functions
+    function updateSpeedModel(speed) {
+      const modelViewer = document.getElementById('speed-model');
+      if (modelViewer) {
+        modelViewer.style.setProperty('--auto-rotate-delay', `${101 - speed}0ms`);
+      }
+    }
+
+    function updateErgonomicModel() {
+      const modelViewer = document.getElementById('ergonomic-model');
+      if (modelViewer) {
+        const distance = logger.testData.results.ergonomicTest.finalDistance;
+        const angle = logger.testData.results.ergonomicTest.finalAngle;
+        modelViewer.cameraOrbit = `0deg ${angle}deg ${distance}m`;
+      }
+    }
+
+    function updateTextSize(size) {
+      const textElement = document.getElementById('test-text');
+      if (textElement) {
+        textElement.style.fontSize = size + 'px';
+      }
+    }
+
+    function updateReferenceScale(scale) {
+      const modelViewer = document.getElementById('reference-model');
+      if (modelViewer) {
+        modelViewer.scale = `${scale} ${scale} ${scale}`;
+      }
+    }
+
+    function updateCeilingPosition() {
+      const modelViewer = document.getElementById('ceiling-model');
+      if (modelViewer) {
+        const x = logger.testData.results.ceilingTest.finalXPosition;
+        const y = logger.testData.results.ceilingTest.finalYPosition;
+        modelViewer.cameraTarget = `${x}m 0m ${y}m`;
+      }
+    }
+
+    // WebXR confirmation functions
+    function confirmSpeedSetting() {
+      logger.markTestComplete('speedTest');
+      document.getElementById('speed-done').classList.remove('hidden');
+      document.getElementById('speed-redo').classList.remove('hidden');
+    }
+
+    function confirmErgonomicSettings() {
+      logger.markTestComplete('ergonomicTest');
+      document.getElementById('ergonomic-done').classList.remove('hidden');
+      document.getElementById('ergonomic-redo').classList.remove('hidden');
+    }
+
+    function confirmTextSize() {
+      logger.markTestComplete('textTest');
+      document.getElementById('text-done').classList.remove('hidden');
+      document.getElementById('text-redo').classList.remove('hidden');
+    }
+
+    function confirmScale() {
+      logger.markTestComplete('referenceTest');
+      document.getElementById('reference-done').classList.remove('hidden');
+      document.getElementById('reference-redo').classList.remove('hidden');
+    }
+
+    function confirmPosition() {
+      logger.markTestComplete('ceilingTest');
+      document.getElementById('ceiling-done').classList.remove('hidden');
+      document.getElementById('ceiling-redo').classList.remove('hidden');
+    }
+
+    function nextTest() {
+      // Mark current test as complete
+      const testNames = ['', 'firstInputTest', 'speedTest', 'ergonomicTest', 'textTest', 'referenceTest', 'ceilingTest', 'demographics'];
+      
+      if (testNames[currentTestIndex]) {
+        logger.markTestComplete(testNames[currentTestIndex]);
+      }
+
+      logger.exitWebXRSession();
+
+      if (currentTestIndex < totalTests) {
+        showTest(currentTestIndex + 1);
+      } else {
+        completeTestSuite();
+      }
+    }
+
+    function redoTest(testNumber) {
+      logger.exitWebXRSession();
+      
+      // Reset test data
+      const testNames = ['', 'firstInputTest', 'speedTest', 'ergonomicTest', 'textTest', 'referenceTest', 'ceilingTest', 'demographics'];
+      
+      if (testNames[testNumber]) {
+        const testName = testNames[testNumber];
+        if (logger.testData.results[testName]) {
+          logger.testData.results[testName].completedSuccessfully = false;
+          logger.testData.results[testName].adjustments = [];
+          logger.testData.results[testName].interactionCount = 0;
+        }
+      }
+
+      // Reset UI and restart test
+      resetTestUI(testNumber);
+      showTest(testNumber);
+      
+      if (testNumber === 1) {
+        setTimeout(() => initializeFirstInputTest(), 1000);
+      }
+    }
+
+    function resetTestUI(testNumber) {
+      const buttonSuffixes = ['first-input', 'speed', 'ergonomic', 'text', 'reference', 'ceiling'];
+      const suffix = testNumber === 1 ? 'first-input' : buttonSuffixes[testNumber - 1];
+      
+      if (suffix) {
+        const doneButton = document.getElementById(`${suffix}-done`);
+        const redoButton = document.getElementById(`${suffix}-redo`);
+        
+        if (doneButton) doneButton.classList.add('hidden');
+        if (redoButton) redoButton.classList.add('hidden');
+      }
+    }
+
+    function completeTestSuite() {
+      // Collect demographic data
+      logger.testData.results.demographics.age = 
+        parseInt(document.getElementById('age-input').value) || null;
+      logger.testData.results.demographics.feedback = 
+        document.getElementById('feedback-textarea').value;
+
+      const overallRating = document.querySelector('input[name="overall"]:checked');
+      logger.testData.results.demographics.overallRating = 
+        overallRating ? parseInt(overallRating.value) : null;
+
+      logger.markTestComplete('demographics');
+      logger.updateStatus('All assessments completed successfully');
+
+      // Show completion screen
+      document.getElementById('test-suite').classList.add('hidden');
+      document.getElementById('completion-screen').classList.remove('hidden');
+
+      // Show data preview
+      const preview = JSON.stringify(logger.testData, null, 2);
+      document.getElementById('data-preview').textContent = 
+        preview.substring(0, 2000) + '...\n[Truncated preview - complete data available in CSV export]';
+    }
+
+    function downloadResults() {
+      const csvData = logger.exportToCSV();
+      const csvContent = csvData.map(row => row.join(',')).join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.setAttribute('hidden', '');
+      a.setAttribute('href', url);
+      a.setAttribute('download', `ceiling_ar_assessment_${logger.sessionId}.csv`);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function () {
+      console.log('Ceiling-AR Assessment Suite initialized');
+      console.log('Session ID:', logger.sessionId);
+      logger.updateStatus('System initialized - Ready to begin');
+      updateProgress();
+      setupWebXRSliders();
+    });
+  </script>
+</body>
+</html>

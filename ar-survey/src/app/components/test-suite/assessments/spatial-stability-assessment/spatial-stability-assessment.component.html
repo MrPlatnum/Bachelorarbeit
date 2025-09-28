@@ -1,0 +1,124 @@
+<div class="w-full h-full relative">
+  <model-viewer
+    #modelViewer
+    class="absolute inset-0 w-full h-full"
+    src="models/CeilingLamp.glb"
+    ar 
+    ar-interaction="false"
+    ar-modes="webxr" 
+    ar-placement="ceiling" 
+    reveal="manual"
+    camera-orbit="0deg 75deg 2m">
+    
+    <button 
+      id="ar-button-stability"
+      slot="ar-button" 
+      (click)="logInteraction($event)"
+      class="absolute top-4 left-1/2 -translate-x-1/2 bg-blue-500 text-white py-2 px-4 rounded-lg z-10">
+      WebXR Umgebung laden
+    </button>
+
+    <div *ngIf="isArActive"
+         class="absolute bottom-24 left-1/2 -translate-x-1/2 transition-opacity duration-300"
+         [class.opacity-50]="!isModelPlaced"
+         [class.pointer-events-none]="!isModelPlaced">
+
+      <div *ngIf="currentPhase === 1"
+           class="ar-controls flex flex-col items-center space-y-6 bg-black bg-opacity-70 p-6 rounded-xl">
+        
+        <div class="text-white text-center mb-4">
+          <h4 id="adjust-phase-title" class="text-lg font-semibold">Finden Sie Ihren Optionale Betrachtungsposition</h4>
+        </div>
+
+        <div class="flex flex-col items-center text-white w-64">
+          <label for="stability-offset-slider" class="text-sm font-medium mb-2">Höhe verschieben</label>
+          <input 
+            id="stability-offset-slider" 
+            type="range" 
+            min="-1.5" 
+            max="1.5" 
+            step="0.01" 
+            [(ngModel)]="verticalOffset"
+            (input)="onSliderInput(); logInteraction($event)"
+            class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" />
+          <span class="text-xs mt-1">{{ verticalOffset >= 0 ? '+' : '' }}{{ verticalOffset.toFixed(2) }}m</span>
+        </div>
+
+        <button 
+          id="lock-position-btn"
+          (click)="lockPosition(); logInteraction($event)"
+          class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-lg">
+          🔒 Diese Position fixieren.
+        </button>
+      </div>
+
+      <div *ngIf="currentPhase === 2"
+           class="ar-controls flex flex-col items-center space-y-4 bg-yellow-600 bg-opacity-90 p-6 rounded-xl">
+        
+        <div class="text-white text-center">
+          <h4 id="lock-confirm-title" class="text-xl font-bold">Position fixiert!</h4>
+          <p class="text-xs mt-2 opacity-80">Halten Sie das Modell für die gesamte Dauer in möglichst genau dieser Position.</p>
+        </div>
+
+        <div class="flex space-x-4">
+          <button 
+            id="adjust-more-btn"
+            (click)="adjustMore(); logInteraction($event)"
+            class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg">
+            Anpassen
+          </button>
+          <button 
+            id="start-countdown-btn"
+            (click)="startCountdown(); logInteraction($event)"
+            class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg">
+            20s Timer starten
+          </button>
+        </div>
+      </div>
+
+    <div *ngIf="currentPhase === 3"
+         class="ar-controls absolute bottom-24 left-1/2 -translate-x-1/2 flex flex-col items-center space-y-4 bg-red-600 bg-opacity-90 p-6 rounded-xl">
+      
+      <div class="text-white text-center">
+        <h4 id="countdown-timer" class="text-3xl font-bold">{{ remainingTime }}</h4>
+        <p class="text-lg">Sekunden verbleibend</p>
+        <p class="text-sm mt-2 opacity-80">Halten Sie das Modell in Position.</p>
+      </div>
+
+      <div class="w-64 h-4 bg-white bg-opacity-30 rounded-full overflow-hidden">
+        <div class="h-full bg-white transition-all duration-1000 ease-linear" [style.width.%]="progressPercentage"></div>
+      </div>
+
+      <button 
+        id="cancel-countdown-btn"
+        (click)="cancelTest(); logInteraction($event)"
+        class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg text-sm">
+        Cancel Test
+      </button>
+    </div>
+
+    <div *ngIf="currentPhase === 4"
+         class="ar-controls absolute bottom-24 left-1/2 -translate-x-1/2 flex flex-col items-center space-y-4 bg-green-600 bg-opacity-90 p-6 rounded-xl">
+      
+      <div class="text-white text-center">
+        <h4 id="completion-title" class="text-2xl font-bold"> Test abgeschlossen</h4>
+      </div>
+
+      <div class="flex space-x-4">
+        <button 
+          id="restart-test-btn"
+          (click)="restartTest(); logInteraction($event)"
+          class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg">
+          Test erneut ausführen
+        </button>
+        <button 
+          id="finish-assessment-btn"
+          (click)="finishAssessment(); logInteraction($event)"
+          class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg">
+          Beenden
+        </button>
+      </div>
+    </div>
+    </div>
+  </model-viewer>
+</div>

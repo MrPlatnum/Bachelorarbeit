@@ -1,0 +1,2 @@
+.ar-controls { display: none; }
+model-viewer[ar-tracking="tracking"] .ar-controls { display: flex; }

@@ -1,0 +1,104 @@
+<div class="w-full h-full relative">
+  <model-viewer #modelViewer class="absolute inset-0 w-full h-full"
+  src="models/CeilingLamp.glb"
+  ar-interaction="false"
+  ar ar-modes="webxr" ar-placement="ceiling"
+  loading="eager"
+  (preload)="onModelPreload()"
+  (load)="onModelLoad()"
+    reveal="manual" camera-orbit="0deg 75deg 2m">
+
+    <button slot="ar-button" id="ar-button-legibility" (click)="logInteraction($event)"
+      class="text-xl absolute top-4 left-1/2 -translate-x-1/2 bg-blue-500 text-white py-2 px-4 rounded-lg z-10">
+      WebXR Umgebung laden
+    </button>
+
+    <button slot="hotspot-text" class="hotspot ar-hotspot" data-position="-0.1 0.93 0.1" data-normal="0 1 0">
+      <div class="annotation" [ngStyle]="{'font-size.px': currentSize}"
+        style="background:rgba(255,255,255,0.9);padding:8px;border-radius:4px;color:black;">
+        Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut
+        labore et
+        dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.
+        Stet
+        clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+      </div>
+    </button>
+
+    <div *ngIf="isArActive"
+      class="absolute bottom-24 left-1/2 -translate-x-1/2 flex flex-col items-center space-y-4 bg-black bg-opacity-70 p-4 rounded-xl text-white z-10 transition-opacity duration-300"
+      [class.opacity-50]="!isModelPlaced" [class.pointer-events-none]="!isModelPlaced">
+
+      <!-- Phase: Min -->
+      <ng-container *ngIf="phase==='min'">
+        <div *ngIf="isDescriptionVisible" class="relative bg-black/30 p-3 pr-8 rounded-lg text-center w-[280px]">
+          <p>Minimum setzen. Der Text sollte gerade so noch lesbar sein. Den Arm hierfür bitte ganz austrecken.</p>
+          <button (click)="toggleDescription()" class="absolute top-1 right-2 text-2xl leading-none">&times;</button>
+        </div>
+        <div class="flex flex-col items-center space-y-4">
+          <div class="flex items-center space-x-4">
+            <button id="min-decrease-btn" (click)="decrease(); logInteraction($event)" class="w-10 h-10 bg-gray-600 rounded-full">–</button>
+            <span>{{ currentSize }}px</span>
+            <button id="min-increase-btn" (click)="increase(); logInteraction($event)" class="w-10 h-10 bg-gray-600 rounded-full">+</button>
+          </div>
+          <button id="min-confirm-btn" (click)="nextPhase(); logInteraction($event)" class="bg-green-600 py-2 px-6 rounded-lg">Minimum bestätigen</button>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="phase==='confirmedMin'">
+        <div class="flex flex-col items-center space-y-4">
+          <div>Minimum bestätigt: {{ minSizeResult }}px</div>
+          <div class="flex space-x-2">
+            <button id="confirmed-min-reset-btn" (click)="resetToMid(); logInteraction($event)" class="bg-gray-600 py-2 px-4 rounded-lg">Reset</button>
+            <button id="confirmed-min-continue-btn" (click)="nextPhase(); logInteraction($event)" class="bg-blue-600 py-2 px-6 rounded-lg">Weiter zu Maximum</button>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="phase==='max'">
+         <div *ngIf="isDescriptionVisible" class="relative bg-black/30 p-3 pr-8 rounded-lg text-center w-[280px]">
+          <p>Maximum setzen. Der Text sollte komplett lesbar sein, ohne das Gerät zu bewegen.</p>
+          <button (click)="toggleDescription()" class="absolute top-1 right-2 text-2xl leading-none">&times;</button>
+        </div>
+        <div class="flex flex-col items-center space-y-4">
+          <div class="flex items-center space-x-4">
+            <button id="max-decrease-btn" (click)="decrease(); logInteraction($event)" class="w-10 h-10 bg-gray-600 rounded-full">–</button>
+            <span>{{ currentSize }}px</span>
+            <button id="max-increase-btn" (click)="increase(); logInteraction($event)" class="w-10 h-10 bg-gray-600 rounded-full">+</button>
+          </div>
+          <button id="max-confirm-btn" (click)="nextPhase(); logInteraction($event)" class="bg-green-600 py-2 px-6 rounded-lg">Maximum bestätigen</button>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="phase==='confirmedMax'">
+        <div class="flex flex-col items-center space-y-4">
+            <div>Maximum bestätigt: {{ maxSizeResult }}px</div>
+            <button id="confirmed-max-continue-btn" (click)="nextPhase(); logInteraction($event)" class="bg-blue-600 py-2 px-6 rounded-lg">Weiter zu Optimal</button>
+        </div>
+      </ng-container>
+
+      <!-- Phase: Comfortable -->
+      <ng-container *ngIf="phase==='comfortable'">
+         <div *ngIf="isDescriptionVisible" class="relative bg-black/30 p-3 pr-8 rounded-lg text-center w-[280px]">
+          <p>Optimale Größe setzen.</p>
+          <button (click)="toggleDescription()" class="absolute top-1 right-2 text-2xl leading-none">&times;</button>
+        </div>
+        <div class="flex flex-col items-center space-y-4">
+          <div class="flex items-center space-x-4">
+            <button id="comfort-decrease-btn" (click)="decrease(); logInteraction($event)" class="w-10 h-10 bg-gray-600 rounded-full">–</button>
+            <span>{{ currentSize }}px</span>
+            <button id="comfort-increase-btn" (click)="increase(); logInteraction($event)" class="w-10 h-10 bg-gray-600 rounded-full">+</button>
+          </div>
+          <button id="comfort-confirm-btn" (click)="nextPhase(); logInteraction($event)" class="bg-green-600 py-2 px-6 rounded-lg">Optimale Größe bestätigen</button>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="phase==='confirmedComfort'">
+        <div class="flex flex-col items-center space-y-4">
+          <div>Optimale Größe bestätigt: {{ comfortableSizeResult }}px</div>
+          <button id="finish-assessment-btn" (click)="finishAssessment(); logInteraction($event)" class="bg-blue-600 py-2 px-6 rounded-lg">Test beenden</button>
+        </div>
+      </ng-container>
+
+    </div>
+  </model-viewer>
+</div>

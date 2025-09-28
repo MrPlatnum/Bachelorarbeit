@@ -1,0 +1,33 @@
+.vertical-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    
+    width: 120px; 
+    height: 8px;
+    
+    background: #4a5568;
+    border-radius: 9999px;
+    outline: none;
+    cursor: pointer;
+    
+    transform: rotate(-90deg);
+  }
+  
+  .vertical-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    background: #ffffff;
+    border-radius: 50%;
+    border: 2px solid #e2e8f0;
+  }
+  
+  .vertical-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    background: #ffffff;
+    border-radius: 50%;
+    border: 2px solid #e2e8f0;
+  }
+  

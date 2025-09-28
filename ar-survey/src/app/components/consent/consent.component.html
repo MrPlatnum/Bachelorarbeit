@@ -1,0 +1,95 @@
+<div class="max-w-4xl mx-auto p-5 mt-8">
+
+  <div *ngIf="isIosDevice" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-6 rounded-lg shadow-lg text-center">
+    <h2 class="text-xl font-bold mb-2">Inkompatibles Gerät</h2>
+    <p class="text-base">
+      Danke, dass Sie an dieser Studie teilnehmen wollen. Leider ist die Studie nur für Android-Geräte verfügbar.
+    </p>
+  </div>
+
+  <div *ngIf="!isIosDevice" class="bg-white rounded-lg shadow-lg">
+    <div class="bg-yellow-50 border border-yellow-200 p-6 rounded-lg mb-6">
+      <h2 class="text-2xl font-semibold text-gray-800 mb-4">
+        Einverständniserklärung
+      </h2>
+      
+      <div class="space-y-4 text-gray-700">
+        <p>
+          <strong>Zweck:</strong> Diese Studie untersucht optimale Design-Parameter für 
+          deckenbasierte Augmented-Reality-Anwendungen. In dieser Simulation geht es darum ein Einkaufserlebnis für eine Deckenlampe zu simulieren um die Benutzbarkeit der Software abschätzen zu können.
+        </p>
+        
+        <div>
+          <p class="font-semibold mb-2">Datenerhebungsprotokoll:</p>
+          <ul class="list-disc list-inside space-y-1 ml-4">
+            <li>Gerätespezifikationen (Display-Abmessungen, Browser-Version, Betriebssystem)</li>
+            <li>WebXR-Interaktionsmetriken und Bewegungsverfolgungsdaten</li>
+            <li>Parameterauswahl</li>
+            <li>Geräteorientierung und Betrachtungswinkel</li>
+            <li>Optionale demografische Informationen</li>
+          </ul>
+        </div>
+
+        <p>
+          <strong>Datenschutz:</strong> Alle erhobenen Daten werden anonymisiert und ausschließlich 
+          für wissenschaftliche Analysen verwendet. Es werden keine personenbezogenen Daten erfasst.
+          Es werden keine Bilder oder Videos erfasst.
+        </p>
+
+        <p>
+          <strong>Freiwillige Teilnahme:</strong> Die Teilnahme ist vollständig freiwillig. 
+          Sie können jederzeit ohne Konsequenzen zurücktreten.
+        </p>
+      </div>
+
+      <details class="mt-6 bg-gray-50 rounded-lg group">
+        <summary class="p-4 font-semibold cursor-pointer flex justify-between items-center text-gray-700 hover:text-gray-900">
+          Hintergrund und Ziele der Studie
+          <svg class="w-5 h-5 transition-transform duration-200 group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+        </summary>
+        <div class="p-4 border-t border-gray-200 text-gray-600 space-y-4">
+
+          <div>
+            <h4 class="font-bold text-gray-800">Was ist Augmented Reality (AR)?</h4>
+            <p>AR erweitert unsere reale Welt um digitale Elemente. Anders als in der Virtual Reality (VR), bei der man man komplett in eine künstliche Welt eintaucht, sehen Sie bei AR Ihre normale Umgebung, die durch virtuelle Objekte und Informationen ergänzt wird.</p>
+          </div>
+          <div>
+            <h4 class="font-bold text-gray-800">Was ist das Neuartige an dieser Forschung?</h4>
+            <p>Diese Studie konzentriert sich auf die Gestaltung von Augmented Reality (AR), die gezielt an Deckenflächen stattfindet. Dies ist ein relativ neues Anwendungsfeld, das besondere Herausforderungen an die Interaktion und Wahrnehmung stellt. Ich möchte herausfinden, wie man solche Anwendungen am besten gestaltet.</p>
+          </div>
+          <div>
+            <h4 class="font-bold text-gray-800">Was ist das Ziel?</h4>
+            <p>Mit den Ergebnissen dieser Studie will ich wissenschaftlich fundierte <strong>Design-Prinzipien</strong> ableiten. Diese sollen zukünftigen Entwicklern helfen, AR-Anwendungen an ungewöhnlichen Orten wie Decken von Anfang an intuitiv, komfortabel und nützlich zu gestalten.</p>
+          </div>
+        </div>
+      </details>
+
+      <div class="mt-6">
+        <label class="flex items-start space-x-3 cursor-pointer">
+          <input 
+            type="checkbox" 
+            class="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            [checked]="consentGiven"
+            (change)="onConsentChange($event)"
+          >
+          <span class="text-gray-700">
+            Ich habe die Informationen gelesen, verstanden und stimme der Datenerhebung zu, um an dieser Studie teilzunehmen.
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <div class="text-center">
+      <button 
+        (click)="startTestSuite()"
+        [disabled]="!consentGiven"
+        class="px-7 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 
+               disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200
+               transform hover:scale-105 disabled:hover:scale-100"
+      >
+        Studie starten
+      </button>
+    </div>
+  </div>
+
+</div>

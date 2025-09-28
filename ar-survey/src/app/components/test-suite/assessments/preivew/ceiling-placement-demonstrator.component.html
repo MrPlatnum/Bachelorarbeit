@@ -1,0 +1,63 @@
+<div class="w-full h-1/2 relative font-sans">
+    <div *ngIf="arHasBeenActive && !isArActive" class="w-full flex justify-center">
+        <button (click)="finishExperience()"
+            class="bg-green-600 text-white py-3 px-8 rounded-lg shadow-lg hover:bg-green-700 transition-colors">
+            Einkaufserlebnis beenden
+        </button>
+    </div>
+    <div class="w-full h-full relative font-sans mb-4">
+        <model-viewer #modelViewer class="absolute inset-0 w-full h-96" src="models/CeilingLamp.glb" ar camera-controls
+            ar-modes="webxr" ar-placement="floor" ar-interaction="true" camera-orbit="0deg 135deg 105%"
+            shadow-intensity="1" ar-scale="fixed" scale="0.1 0.1 0.1" alt="Virtuelles 3D-Modell einer Deckenleuchte">
+
+            <button slot="ar-button" (click)="logInteraction($event)"
+                class="absolute top-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white py-2 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors z-10">
+                Diese Lampe bei mir Zuhause anschauen
+            </button>
+
+            <div *ngIf="isArActive" class="absolute inset-0 z-20 pointer-events-none">
+
+                <div *ngIf="isInfoBoxVisible"
+                    class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black bg-opacity-80 p-6 rounded-xl text-white text-center shadow-lg transition-opacity duration-300 w-80 pointer-events-auto flex flex-col items-center">
+                    <p class="mb-4">
+                        Versuchen Sie die Lampe an der Decke zu plazieren und schauen Sie sich die Lampe an. Die Lampe
+                        lässt sich mit den Fingern verschieben und mit dem Slider in der Höhe platzieren.
+                    </p>
+                    <button (click)="dismissInfoBox($event)"
+                        class="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors">
+                        Verstanden
+                    </button>
+                </div>
+
+                <div *ngIf="!isInfoBoxVisible && !isModelPlaced && !isCeilingAimed"
+                    class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black bg-opacity-70 p-4 rounded-xl text-white text-center transition-opacity duration-300 w-64 pointer-events-auto">
+                    <h4 class="text-lg font-semibold">Decke anvisieren</h4>
+                    <p class="mt-1 text-sm opacity-90">Richten Sie Ihr Gerät nach oben und schauen Sie sich um.</p>
+                </div>
+
+                <div *ngIf="isModelPlaced"
+                    class="ar-controls absolute bottom-8 left-1/2 -translate-x-1/2 bg-black bg-opacity-70 p-5 rounded-xl flex flex-col items-center space-y-4 text-white z-10 pointer-events-auto w-80">
+
+                    <div class="flex flex-col items-start w-full">
+                        <label for="offset-slider" class="text-sm font-medium mb-1">Höhe anpassen</label>
+                        <input id="offset-slider" type="range" min="-0.5" max="2" step="0.01" [ngModel]="verticalOffset"
+                            (ngModelChange)="onOffsetChange($event)" (input)="logInteraction($event)"
+                            class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" />
+                        <span class="text-xs mt-1 self-center">{{ verticalOffset >= 0 ? '+' : '' }}{{
+                            verticalOffset.toFixed(2) }}m</span>
+                    </div>
+
+
+                    <div class="flex space-x-4 justify-center w-full">
+                        <button id="reset-ceiling-btn" (click)="resetOffset($event)"
+                            class="bg-gray-600 text-white py-2 px-4 rounded-lg flex-1">
+                            Höhe zurücksetzen
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </model-viewer>
+    </div>
+
+
+</div>
